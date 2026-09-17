@@ -114,6 +114,16 @@ static const std::vector<Resolution>& GetResolutionsFromIpV4(
             { 1068, 600 }
           }),
 
+      // Resurgence R2 (box 1)
+      Ipv4HashResolutionTableEntry(
+          "3DF5F3966B5A406D10B23C91B250E3AEE61568AB",
+          {
+            kResolution640x480,
+            kResolution800x600,
+            { 856, 480 },
+            { 1068, 600 }
+          }),
+
       // Rebirth D2
       Ipv4HashResolutionTableEntry(
           "3F37A6BE5E02055D3E57D45353338FFD0EFA58BC",
@@ -263,6 +273,16 @@ static const std::vector<Resolution>& GetResolutionsFromIpV4(
       // play.slashdiablo.net
       Ipv4HashResolutionTableEntry(
           "C311F388012034C4ACB91AC573965302CF5711E0",
+          {
+            kResolution640x480,
+            kResolution800x600,
+            { 856, 480 },
+            { 1068, 600 }
+          }),
+
+      // Resurgence R2 (box 2)
+      Ipv4HashResolutionTableEntry(
+          "CE9991D3BFF0109B0104F6CA330D7A5EF9E74CEB",
           {
             kResolution640x480,
             kResolution800x600,
