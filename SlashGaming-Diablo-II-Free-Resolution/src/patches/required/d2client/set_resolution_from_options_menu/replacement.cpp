@@ -148,13 +148,8 @@ void __cdecl Sgd2fr_D2Client_SetResolutionFromOptionsMenu(
     return;
   }
 
-  std::size_t max_registry_resolution_id = GetMaxConfigResolutionId();
-
-  if (reg_resolution_mode >= max_registry_resolution_id) {
-    *reg_resolution_mode_out = GetMinConfigResolutionId();
-  } else {
-    *reg_resolution_mode_out = reg_resolution_mode;
-  }
+  // Resurgence: the resolution entry has one stop.
+  *reg_resolution_mode_out = GetForcedConfigResolutionId();
 }
 
 } // namespace sgd2fr::patches

@@ -118,9 +118,6 @@ static const std::vector<Resolution>& GetResolutionsFromIpV4(
       Ipv4HashResolutionTableEntry(
           "3DF5F3966B5A406D10B23C91B250E3AEE61568AB",
           {
-            kResolution640x480,
-            kResolution800x600,
-            { 856, 480 },
             { 1068, 600 }
           }),
 
@@ -284,9 +281,6 @@ static const std::vector<Resolution>& GetResolutionsFromIpV4(
       Ipv4HashResolutionTableEntry(
           "CE9991D3BFF0109B0104F6CA330D7A5EF9E74CEB",
           {
-            kResolution640x480,
-            kResolution800x600,
-            { 856, 480 },
             { 1068, 600 }
           }),
 
@@ -363,12 +357,14 @@ static const std::vector<Resolution>& GetResolutionsFromIpV4(
   return search_range.first->second;
 }
 
+// Resurgence: the game is laid out for one in-game resolution, so every game
+// type uses it, whatever the config or the gateway table says.
 const std::vector<Resolution>& SelectLocalOrOnlineResolutions() {
-  if (d2::d2client::GetGameType() == ::d2::ClientGameType::kBattleNetJoin) {
-    return GetResolutionsFromIpV4(d2::bnclient::GetGatewayIpV4Address());
-  } else {
-    return config::GetIngameResolutions();
-  }
+  static const std::vector<Resolution> resurgence_resolutions = {
+    kResurgenceResolution
+  };
+
+  return resurgence_resolutions;
 }
 
 const std::set<Resolution>& GetStandardResolutions() {
@@ -418,10 +414,13 @@ const std::vector<Resolution>& GetNonCrashingIngameResolutions() {
 
         non_crashing_ingame_resolutions.clear();
 
-        if (current_video_mode == ::d2::VideoMode::kDirect3D
-            || (current_video_mode == ::d2::VideoMode::kDirectDraw
-                && ddraw_version::GetRunning() != DDrawVersion::kCnC
-                && ddraw_version::GetRunning() != DDrawVersion::kD2gl)) {
+        // Resurgence: no filter. The forced resolution is never a standard
+        // display mode, and an empty list would fail every id lookup.
+        if (false
+            && (current_video_mode == ::d2::VideoMode::kDirect3D
+                || (current_video_mode == ::d2::VideoMode::kDirectDraw
+                    && ddraw_version::GetRunning() != DDrawVersion::kCnC
+                    && ddraw_version::GetRunning() != DDrawVersion::kD2gl))) {
           std::copy_if(
               selected_ingame_resolutions.cbegin(),
               selected_ingame_resolutions.cend(),
@@ -444,6 +443,11 @@ const std::vector<Resolution>& GetNonCrashingIngameResolutions() {
 
 const Resolution kResolution640x480 = { 640, 480 };
 const Resolution kResolution800x600 = { 800, 600 };
+const Resolution kResurgenceResolution = { 1068, 600 };
+
+std::size_t GetForcedConfigResolutionId() {
+  return GetMinConfigResolutionId();
+}
 
 std::size_t GetMinConfigResolutionId() {
   return GetNonCrashingIngameResolutions().at(0) == kResolution640x480

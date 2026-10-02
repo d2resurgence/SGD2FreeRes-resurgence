@@ -75,6 +75,13 @@ struct Resolution {
 
 extern const Resolution kResolution640x480;
 extern const Resolution kResolution800x600;
+extern const Resolution kResurgenceResolution;
+
+/**
+ * Resurgence: the config id of the one in-game resolution, which every
+ * registry read, options-menu cycle and save resolves to.
+ */
+std::size_t GetForcedConfigResolutionId();
 
 std::size_t GetMinConfigResolutionId();
 std::size_t GetMaxConfigResolutionId();

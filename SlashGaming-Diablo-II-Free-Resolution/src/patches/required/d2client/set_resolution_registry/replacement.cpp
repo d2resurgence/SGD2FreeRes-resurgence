@@ -56,8 +56,10 @@ void __cdecl Sgd2fr_D2Client_SetResolutionRegistry(
     std::uint32_t reg_resolution_mode,
     std::uint32_t* ingame_resolution_mode
 ) {
-  // reg_resolution_mode value cycle:
-  // 0 -> 1 -> 3 -> ... -> 0
+  // Resurgence: whatever the options menu chose, the forced resolution is
+  // what is saved and applied.
+  reg_resolution_mode = GetForcedConfigResolutionId();
+
   config::SetIngameResolutionMode(
       reg_resolution_mode
   );

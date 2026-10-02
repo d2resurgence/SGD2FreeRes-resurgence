@@ -57,15 +57,9 @@ void __cdecl Sgd2fr_D2Client_GetResolutionRegistry(
     std::uint32_t* reg_resolution_mode,
     std::uint32_t* ingame_resolution_mode
 ) {
-  // Check the user's input to prevent out-of-index selections.
-  *reg_resolution_mode = config::GetIngameResolutionMode();
-
-  size_t min_config_resolution_id = GetMinConfigResolutionId();
-
-  if (*reg_resolution_mode < min_config_resolution_id
-      || *reg_resolution_mode >= GetMaxConfigResolutionId()) {
-    *reg_resolution_mode = min_config_resolution_id;
-  }
+  // Resurgence: the saved mode is ignored; the game always opens at the
+  // forced resolution.
+  *reg_resolution_mode = GetForcedConfigResolutionId();
 
   if (*reg_resolution_mode == 0) {
     *ingame_resolution_mode = 0;
