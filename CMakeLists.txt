@@ -11,6 +11,12 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# The constexpr std::mutex constructor (VS 17.10+) needs msvcp140.dll >= 14.40
+# at runtime; an older system or Wine-builtin runtime crashes in _Mtx_lock.
+if (MSVC)
+    add_compile_definitions(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
+endif (MSVC)
+
 # External dependencies
 add_subdirectory(external)
 
