@@ -94,6 +94,13 @@ static const std::vector<Resolution>& GetResolutionsFromIpV4(
   // Warning: This needs to be sorted lexicographically!
   static const Ipv4HashResolutionTableEntry kSortedIpv4ResolutionTable[] = {
 
+      // Resurgence R2 Staging
+      Ipv4HashResolutionTableEntry(
+          "13FD9EA63C95514DA5167D499443ED69EE0AAC97",
+          {
+            { 1068, 600 }
+          }),
+
       // timer's server (old)
       Ipv4HashResolutionTableEntry(
           "1EF04EB4585C6521BDD6F644D0AB3D2020EC4600",
