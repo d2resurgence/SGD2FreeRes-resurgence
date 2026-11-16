@@ -53,6 +53,7 @@
 #include "../../../../config.hpp"
 #include "../../../../helper/cel_file_collection.hpp"
 #include "../../../../helper/game_resolution.hpp"
+#include "../../../../helper/position_realignment.hpp"
 #include "../../../../sgd2mapi_extension/sgd2mapi_extension.hpp"
 
 namespace sgd2fr {
@@ -182,14 +183,13 @@ void DrawRightScreenBackground() {
  * Drawing the original screen border frame requires significantly
  * different code due to its abnormal structure.
  */
-void DrawOriginalLeftScreenBorderFrame() {
+void DrawOriginalLeftScreenBorderFrame(const int left) {
   ::d2::CelFile_Api& screen_border_frame =
       GetCelFile(kOriginalScreenBorderFrameImagePath);
 
   Resolution resolution =
       GetIngameResolutionFromId(d2::d2gfx::GetResolutionMode());
 
-  const int left = (resolution.width - 640 - (800 - 640)) / 2;
   const int top = ((resolution.height - 480 - (600 - 480)) / 2) - 3;
 
   std::vector<d2::Cel_View> cels;
@@ -230,14 +230,13 @@ void DrawOriginalLeftScreenBorderFrame() {
       frame_options);
 }
 
-void DrawOriginalRightScreenBorderFrame() {
+void DrawOriginalRightScreenBorderFrame(const int right) {
   ::d2::CelFile_Api& screen_border_frame =
       GetCelFile(kOriginalScreenBorderFrameImagePath);
 
   Resolution resolution =
       GetIngameResolutionFromId(d2::d2gfx::GetResolutionMode());
 
-  const int right = (resolution.width + 640 + (800 - 640)) / 2;
   const int top = ((resolution.height - 480 - (600 - 480)) / 2) - 3;
 
   std::vector<d2::Cel_View> cels;
@@ -570,7 +569,11 @@ void DrawLeftScreenBorderFrame() {
   }
 
   if (config::IsUseOriginalScreenBorderFrame()) {
-    DrawOriginalLeftScreenBorderFrame();
+    Resolution resolution =
+        GetIngameResolutionFromId(d2::d2gfx::GetResolutionMode());
+
+    DrawOriginalLeftScreenBorderFrame(
+        (resolution.width - 640 - (800 - 640)) / 2);
   } else {
     DrawCustomLeftScreenBorderFrame();
   }
@@ -582,10 +585,45 @@ void DrawRightScreenBorderFrame() {
   }
 
   if (config::IsUseOriginalScreenBorderFrame()) {
-    DrawOriginalRightScreenBorderFrame();
+    Resolution resolution =
+        GetIngameResolutionFromId(d2::d2gfx::GetResolutionMode());
+
+    DrawOriginalRightScreenBorderFrame(
+        (resolution.width + 640 + (800 - 640)) / 2);
   } else {
     DrawCustomRightScreenBorderFrame();
   }
+}
+
+/**
+ * With the side panels at the screen's edges, the original 800 border
+ * frame fills the ScreenShiftX pixels between each panel and its edge,
+ * as it does at 800x600, and the world shows between the panels. The
+ * background and custom frame are drawn only for centered panels.
+ */
+void DrawLeftScreenBorderFrameAtEdge() {
+  if (!config::IsScreenBorderFrameEnabled()) {
+    return;
+  }
+
+  Resolution resolution =
+      GetIngameResolutionFromId(d2::d2gfx::GetResolutionMode());
+
+  DrawOriginalLeftScreenBorderFrame(
+      GetScreenShiftX(resolution.width) - ((800 - 640) / 2));
+}
+
+void DrawRightScreenBorderFrameAtEdge() {
+  if (!config::IsScreenBorderFrameEnabled()) {
+    return;
+  }
+
+  Resolution resolution =
+      GetIngameResolutionFromId(d2::d2gfx::GetResolutionMode());
+
+  DrawOriginalRightScreenBorderFrame(
+      resolution.width
+          - (GetScreenShiftX(resolution.width) - ((800 - 640) / 2)));
 }
 
 void DrawLeftScreenBackgroundRibbon() {
@@ -958,6 +996,25 @@ void DrawRightScreenBackgroundRibbon() {
 void Sgd2fr_D2Client_DrawScreenBackground() {
   ::d2::ScreenOpenMode screen_open_mode =
       ::d2::d2client::GetScreenOpenMode();
+
+  Resolution resolution =
+      GetIngameResolutionFromId(d2::d2gfx::GetResolutionMode());
+
+  if (AreSidePanelsAtScreenEdges(resolution.width)) {
+    if (screen_open_mode == ::d2::ScreenOpenMode::kLeft
+        || screen_open_mode == ::d2::ScreenOpenMode::kBoth) {
+      DrawLeftScreenBorderFrameAtEdge();
+    }
+
+    if (screen_open_mode == ::d2::ScreenOpenMode::kRight
+        || screen_open_mode == ::d2::ScreenOpenMode::kBoth) {
+      DrawRightScreenBorderFrameAtEdge();
+    }
+
+    // Original code
+    ::d2::d2client::DrawScreens();
+    return;
+  }
 
   switch (screen_open_mode) {
     case ::d2::ScreenOpenMode::kNone: {

@@ -193,6 +193,13 @@ constexpr std::string_view kIsUseOriginalScreenBorderFrameKey =
     "Use Original Screen Border Frame?";
 constexpr bool kDefaultIsUseOriginalScreenBorderFrame = false;
 
+// Side panels against the screen's edges, each with the original 800
+// border frame, instead of centered with the background and frame
+// above. Applies only to resolutions wider than 800.
+constexpr std::string_view kIsSidePanelsAtScreenEdgesKey =
+    "Side Panels At Screen Edges?";
+constexpr bool kDefaultIsSidePanelsAtScreenEdges = false;
+
 // Is 800 Interface Bar Enabled
 constexpr std::string_view kIs800InterfaceBarEnabledKey =
     "Use 800 Interface Bar?";
@@ -564,6 +571,14 @@ bool AddMissingConfigEntries(
         kDefaultIsUseOriginalScreenBorderFrame,
         kMainEntryKey,
         kIsUseOriginalScreenBorderFrameKey
+    );
+  }
+
+  if (!config_reader.HasBool(kMainEntryKey, kIsSidePanelsAtScreenEdgesKey)) {
+    config_reader.SetDeepBool(
+        kDefaultIsSidePanelsAtScreenEdges,
+        kMainEntryKey,
+        kIsSidePanelsAtScreenEdgesKey
     );
   }
 
@@ -1119,6 +1134,23 @@ bool IsUseOriginalScreenBorderFrame() {
   );
 
   return is_use_screen_border_frame;
+}
+
+bool IsSidePanelsAtScreenEdges() {
+  static bool is_side_panels_at_screen_edges;
+
+  std::call_once(
+      GetOnceFlag(kMainEntryKey, kIsSidePanelsAtScreenEdgesKey),
+      [=] () {
+        is_side_panels_at_screen_edges = GetConfigReader()
+            .GetBool(
+                kMainEntryKey,
+                kIsSidePanelsAtScreenEdgesKey
+            );
+      }
+  );
+
+  return is_side_panels_at_screen_edges;
 }
 
 bool Is800InterfaceBarEnabled() {

@@ -87,6 +87,7 @@ std::string_view GetInterfaceBarBackgroundRightImagePath();
 
 bool IsScreenBorderFrameEnabled();
 bool IsUseOriginalScreenBorderFrame();
+bool IsSidePanelsAtScreenEdges();
 
 bool Is800InterfaceBarEnabled();
 

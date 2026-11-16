@@ -45,9 +45,84 @@
 
 #include "position_realignment.hpp"
 
+#include "../config.hpp"
 #include "game_resolution.hpp"
 
 namespace sgd2fr {
+namespace {
+
+// 800x600's own ScreenShiftX: each side panel 80 pixels in from its
+// edge, with the original 800 border frame filling those pixels.
+constexpr int kScreenShiftXAtEdges = (800 - 640) / 2;
+
+int GetCenteredScreenShiftX(int display_width) {
+  return (display_width / 2) - (640 / 2);
+}
+
+} // namespace
+
+int GetScreenShiftX(int display_width) {
+  int centered_screen_shift_x = GetCenteredScreenShiftX(display_width);
+
+  if (!config::IsSidePanelsAtScreenEdges()
+      || centered_screen_shift_x <= kScreenShiftXAtEdges) {
+    return centered_screen_shift_x;
+  }
+
+  return kScreenShiftXAtEdges;
+}
+
+bool AreSidePanelsAtScreenEdges(int display_width) {
+  return GetScreenShiftX(display_width)
+      != GetCenteredScreenShiftX(display_width);
+}
+
+void RealignPositionToSidePanel(
+    ::d2::PositionalRectangle_Wrapper out_position_wrapper) {
+  Resolution current_resolution =
+      GetIngameResolutionFromId(::d2::d2gfx::GetResolutionMode());
+
+  if (!AreSidePanelsAtScreenEdges(current_resolution.width)) {
+    RealignPositionFromCenter(out_position_wrapper);
+    return;
+  }
+
+  Resolution source_resolution = GetSourceInventoryArrangeResolution();
+
+  int current_screen_shift_x = GetScreenShiftX(current_resolution.width);
+  int source_screen_shift_x =
+      GetCenteredScreenShiftX(source_resolution.width);
+
+  // A left panel's pieces sit at ScreenShiftX + k, a right panel's at
+  // width - ScreenShiftX - k, in the source arrangement and on screen.
+  int offset_x;
+  if (out_position_wrapper.GetLeft() < (source_resolution.width / 2)) {
+    offset_x = current_screen_shift_x - source_screen_shift_x;
+  } else {
+    offset_x = (current_resolution.width - current_screen_shift_x)
+        - (source_resolution.width - source_screen_shift_x);
+  }
+
+  int rectangle_width =
+      out_position_wrapper.GetRight() - out_position_wrapper.GetLeft();
+
+  out_position_wrapper.SetLeft(out_position_wrapper.GetLeft() + offset_x);
+  out_position_wrapper.SetRight(
+      out_position_wrapper.GetLeft() + rectangle_width);
+
+  // Set top and bottom values, as RealignPositionFromCenter does.
+  int dist_from_rect_top_to_display_center =
+      out_position_wrapper.GetTop() - (source_resolution.height / 2);
+
+  int rectangle_height =
+      out_position_wrapper.GetBottom() - out_position_wrapper.GetTop();
+
+  out_position_wrapper.SetTop(
+      (current_resolution.height / 2) + dist_from_rect_top_to_display_center);
+
+  out_position_wrapper.SetBottom(
+      out_position_wrapper.GetTop() + rectangle_height);
+}
 
 void RealignPositionFromCenter(
     ::d2::PositionalRectangle_Wrapper out_position_wrapper) {

@@ -58,6 +58,30 @@ void RealignPositionFromBottomCenter(
     ::d2::PositionalRectangle_Wrapper out_position_wrapper
 );
 
+/**
+ * D2Client draws a left side panel at ScreenShiftX + k and a right side
+ * panel at width - ScreenShiftX - k, so this one value sets how far in
+ * from the screen's edges the side panels sit.
+ */
+int GetScreenShiftX(int display_width);
+
+/**
+ * True when the side panels are configured to sit at the screen's
+ * edges and the display is wide enough for that to differ from
+ * centering them.
+ */
+bool AreSidePanelsAtScreenEdges(int display_width);
+
+/**
+ * Realigns a rectangle of the source inventory arrangement with the side
+ * panel it belongs to: one whose left edge is left of the source's
+ * center moves with the left panel, any other with the right panel.
+ * Centered panels give the same result as RealignPositionFromCenter.
+ */
+void RealignPositionToSidePanel(
+    ::d2::PositionalRectangle_Wrapper out_position_wrapper
+);
+
 } // namespace sgd2fr
 
 #endif // SGD2FR_HELPER_POSITION_REALIGNMENT_HPP_

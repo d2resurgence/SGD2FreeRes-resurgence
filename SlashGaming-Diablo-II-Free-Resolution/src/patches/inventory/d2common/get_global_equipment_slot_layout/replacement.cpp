@@ -88,7 +88,7 @@ void __cdecl Sgd2fr_D2Common_GetGlobalEquipmentSlotLayout(
 
   // Adjustment code to ensure that the objects appear in the correct
   // location.
-  RealignPositionFromCenter(
+  RealignPositionToSidePanel(
       out_equipment_slot_layout_wrapper.GetPosition()
   );
 }
