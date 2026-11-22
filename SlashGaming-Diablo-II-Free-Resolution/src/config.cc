@@ -196,9 +196,17 @@ constexpr bool kDefaultIsUseOriginalScreenBorderFrame = false;
 // Side panels against the screen's edges, each with the original 800
 // border frame, instead of centered with the background and frame
 // above. Applies only to resolutions wider than 800.
+//
+// Resurgence: a json that names the key decides. A json without it takes
+// the default from D2Resurgence.dll, whose build carries the D2Client
+// changes the layout needs: on when it exports the function below and it
+// returns non-zero, else off. The default is never written back, so a
+// player's json keeps following the D2Resurgence they run.
 constexpr std::string_view kIsSidePanelsAtScreenEdgesKey =
     "Side Panels At Screen Edges?";
-constexpr bool kDefaultIsSidePanelsAtScreenEdges = false;
+constexpr wchar_t kResurgenceModuleName[] = L"D2Resurgence.dll";
+constexpr char kResurgenceSidePanelsDefaultExport[] =
+    "R2SIDEPANELS_DefaultAtScreenEdges";
 
 // Is 800 Interface Bar Enabled
 constexpr std::string_view kIs800InterfaceBarEnabledKey =
@@ -571,14 +579,6 @@ bool AddMissingConfigEntries(
         kDefaultIsUseOriginalScreenBorderFrame,
         kMainEntryKey,
         kIsUseOriginalScreenBorderFrameKey
-    );
-  }
-
-  if (!config_reader.HasBool(kMainEntryKey, kIsSidePanelsAtScreenEdgesKey)) {
-    config_reader.SetDeepBool(
-        kDefaultIsSidePanelsAtScreenEdges,
-        kMainEntryKey,
-        kIsSidePanelsAtScreenEdgesKey
     );
   }
 
@@ -1142,11 +1142,28 @@ bool IsSidePanelsAtScreenEdges() {
   std::call_once(
       GetOnceFlag(kMainEntryKey, kIsSidePanelsAtScreenEdgesKey),
       [=] () {
-        is_side_panels_at_screen_edges = GetConfigReader()
-            .GetBool(
+        auto& config_reader = GetConfigReader();
+        if (config_reader.HasBool(
                 kMainEntryKey,
                 kIsSidePanelsAtScreenEdgesKey
-            );
+            )) {
+          is_side_panels_at_screen_edges = config_reader.GetBool(
+              kMainEntryKey,
+              kIsSidePanelsAtScreenEdgesKey
+          );
+          return;
+        }
+
+        using DefaultFunc = int (__cdecl*)(void);
+        HMODULE resurgence = ::GetModuleHandleW(kResurgenceModuleName);
+        DefaultFunc default_func = (resurgence == nullptr)
+            ? nullptr
+            : reinterpret_cast<DefaultFunc>(::GetProcAddress(
+                  resurgence,
+                  kResurgenceSidePanelsDefaultExport
+              ));
+        is_side_panels_at_screen_edges =
+            default_func != nullptr && default_func() != 0;
       }
   );
 
